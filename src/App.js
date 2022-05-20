@@ -61,10 +61,10 @@ function App() {
 
     useEffect(() => {
         console.log("window.ethereum", window.ethereum);
-        if (!!window.ethereum._state.initialized) {
+        if (window && window?.ethereum && !!window.ethereum._state.initialized) {
             setInitialized(true);
         }
-    }, [window.ethereum._state.initialized]);
+    }, [window]);
 
     useEffect(() => {
         if (!!error) {
