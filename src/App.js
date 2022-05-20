@@ -1,15 +1,12 @@
-import logo from "./logo.svg";
 import "./App.css";
-import { hooks, injected, metaMask } from "./utils/Metamask";
-import { useEffect, useState } from "react";
+import { injected } from "./utils/Metamask";
+import { useEffect } from "react";
 import { useWeb3React, UnsupportedChainIdError } from "@web3-react/core";
 
 import {
-    InjectedConnector,
     NoEthereumProviderError,
     UserRejectedRequestError as UserRejectedRequestErrorInjected,
 } from "@web3-react/injected-connector";
-import { useEagerConnect, useInactiveListener } from "./utils/hooks";
 
 function getErrorMessage(error) {
     if (error instanceof NoEthereumProviderError) {
@@ -25,46 +22,12 @@ function getErrorMessage(error) {
 }
 
 function App() {
-    const [activatingConnector, setActivatingConnector] = useState();
-    const [intialized, setInitialized] = useState(false);
-
-    // MetaMask Connection
     const context = useWeb3React();
-    const {
-        account,
-        activate,
-        active,
-        chainId,
-        connector,
-        deactivate,
-        error,
-        library: provider,
-        setConnector,
-    } = context;
+    const { account, error, activate } = context;
 
     useEffect(() => {
-        if (activatingConnector && activatingConnector === connector) {
-            setActivatingConnector(undefined);
-        }
-    }, [activatingConnector, connector]);
-
-    // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-    const triedEager = useEagerConnect();
-
-    // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
-    useInactiveListener(!triedEager || !!activatingConnector);
-
-    const currentConnector = injected;
-    const activating = currentConnector === activatingConnector;
-    const connected = currentConnector === connector;
-    const disabled = !!activatingConnector || connected || !!error;
-
-    useEffect(() => {
-        console.log("window.ethereum", window.ethereum);
-        if (window && window?.ethereum && !!window.ethereum._state.initialized) {
-            setInitialized(true);
-        }
-    }, [window]);
+        console.log("window.ethereum", window?.ethereum);
+    }, []);
 
     useEffect(() => {
         if (!!error) {
@@ -75,20 +38,24 @@ function App() {
 
     const handleMetaMaskConnection = async () => {
         const { ethereum } = window;
+        if (!ethereum) {
+            alert("No Ethereum wallet found");
+            return;
+        }
+        console.log("etherum", ethereum);
         if (!ethereum._state.initialized) {
             alert("Not intialized");
             window.location.reload(false);
+            return;
         }
-        await ethereum.request({ method: "eth_requestAccounts" });
-        // activate(injected);
+        console.log("after ifffff");
+        // await ethereum.request({ method: "eth_requestAccounts" });
+        activate(injected);
     };
 
     return (
         <div className="App">
-            <p>
-                window.ethereum._state.initialized:
-                {String(intialized)}
-            </p>
+            <p>Check console for window.ethereum._state.initialized</p>
             {account ? (
                 account
             ) : (
